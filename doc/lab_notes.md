@@ -69,5 +69,52 @@ Eliminer contamination ?
 - HGAP : correction long reads avec lui-même 
 - ALLPATH-LG  
 
+# 26 janvier 2018 
 
-  
+## Plan
+
+### 1. Simulation séquences 
+
+- Déterminer la communauté de plasmides/contaminants à utiliser 
+
+- Simulation métagénome à partir des séquences plasmidiques : Grinder (Illumina paired-end metagenome) + FASTQSim PacBio  
+Déterminer différentes couvertures à tester. 
+
+- Simulation contamination  
+Différents niveaux de contamination 
+
+### 2. Assemblage plasmides 
+
+2 approches : Assemblage puis détection plasmides / nettoyage contamination + assemblage 
+ 
+a. Assemblage 
+
+Assemblage short reads vs assemblage hybride pour voir si ça améliore 
+
+- Assemblage short reads  
+Comparer assembleurs "classiques" et assembleurs métagénome ?  
+Classique : SPAdes, Abyss (grds jeux de données, de Bruijn), Velvet, SOAPdenovo2, Masurca   
+Metagenome : metaSPAdes, Omega, Ray meta, metaVelvet-SL, megaHit  
+ 
+- Assemblage hybride (Illumina + PacBio)  
+* hybridSPAdes : construction graphe short-reads puis correction PacBio 
+* Cerulean  
+* AllPaths-LG : attention, condition strictes taille insertion 
+* Masurca (mega-reads algorithm) 
+* PBcR : correction long reads par short reads 
+* PBJelly
+* Unicycler : utilise SPAdes  
+
+b. Détection plasmides 
+* plasmidSPAdes : tout peut être fait d'un coup (assemblage hybride + plasmide) 
+* Recycler : extraction contigs circulaires 
+* PlasFlow : réseaux de neurones, apprentissage basé sur signature génomiques 
+* PLACNET : 
+* PlasmidFinder : comparaison db. Webtool. Utilise blastn    
+Peut-être combiner de novo et approche comparative.  
+
+c. Contamination  
+Approche par alignement ?? 
+
+d. Qualité assemblage 
+metaQUAST   
