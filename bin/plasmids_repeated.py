@@ -38,7 +38,7 @@ blast_f = open(blast,"r")
 
 dic_same,to_delete=determine_duplicated(blast_f) 
 print(to_delete,len(to_delete))
-delete_duplicates(old_fasta,new_fasta,to_delete) 
+#delete_duplicates(old_fasta,new_fasta,to_delete) 
 blast_f.close() 
 
 
