@@ -1,4 +1,7 @@
 doc/lab_notes.md
-plasmid_db/
+doc/to_do.txt 
+plasmid_db*/
 tmp/
 *.swp
+results/
+data/
