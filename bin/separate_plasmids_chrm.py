@@ -3,58 +3,62 @@ import sys
 from Bio import SeqIO
 
 def usage(): 
-	print('usage : python3 separate_plasmids_chrm.py <genomes directory> <plasmids fasta file> <chromosomes fasta file> <summary tsv file> <execution mode>')
+	print('usage : python3 separate_plasmids_chrm.py <genomes directory> <outdir> <execution mode>')
 
-def separate(outfile): 
-	chrm_records=[]
-	plasmid_records=[]
+def separate(outfile,outfile2): 
 	dic_summary={}
-	out=open(outfile,"w") 
-	out.write("plasmid_id\tplasmid length\tchromosome_id\tfile\n") 	
+	out_plasmid=open(outfile,"w") 
+	out_chrm=open(outfile2,"w")
+	out_plasmid.write("#gcf_number\tplasmid_id\tplasmid_description\tplasmid_length\n") 
+	out_chrm.write("#gcf_number\tchrm_id\tchrm_description\tchrm_length\n") 	
 	for f in os.listdir(genome_directory): 
 		if f.endswith(".fna"): 
+			gcf_number=f.split("_genomic")[0]
+			dic_summary[gcf_number]={"chrm":[],"plasmids":[]}
 			for record in SeqIO.parse(genome_directory+"/"+f,"fasta"): 
 				if "complete genome" in record.description or "chromosome" in record.description: 
-					chrm_records.append(record) 
-					current_chrm=record.id
+					out_chrm.write(gcf_number+"\t"+record.id+"\t"+record.description+"\t"+str(len(record.seq))+"\n")  
+					dic_summary[gcf_number]["chrm"].append(record)
 				elif "plasmid" in record.description: 
-					plasmid_records.append(record) 
-					out.write(record.id+"\t"+str(len(record.seq))+"\t"+current_chrm+"\t"+f+"\n") 
-					dic_summary[record.id]=current_chrm 
-	out.close() 
-	return chrm_records,plasmid_records,dic_summary				
+					out_plasmid.write(gcf_number+"\t"+record.id+"\t"+record.description+"\t"+str(len(record.seq))+"\n") 
+					dic_summary[gcf_number]["plasmids"].append(record)
+	out_plasmid.close()
+	out_chrm.close() 
+	return dic_summary		
 	
 	
-def write_fastas(plasmid_fasta,chrm_fasta,mode,summary,plasmid_rec,chrm_rec):
-	if mode == "test":
-		nbre_plasmids=15  
-		keep_chrm=set()
-		for rec in plasmid_rec[:nbre_plasmids]: 
-			keep_chrm.add(summary[rec.id]) 
-		nbre_chrm=len(keep_chrm)
-	else : 
-		nbre_plasmids=len(plasmid_rec) 
-		nbre_chrm=len(chrm_rec) 	
-			
-	with open(plasmid_fasta, "w") as output_handle:
-		SeqIO.write(plasmid_rec[:nbre_plasmids], output_handle, "fasta")
-	with open(chrm_fasta, "w") as output_handle: 
-		SeqIO.write(chrm_rec[:nbre_chrm], output_handle, "fasta") 	
+def write_fastas(outdir,dic_summary,mode,plasmids_dir):
+	if mode == "test": 
+		selected_gcf=["GCF_000011805.1_ASM1180v1", "GCF_000008865.1_ASM886v1", "GCF_000006945.2_ASM694v2","GCF_000014525.1_ASM1452v1", "GCF_000006925.2_ASM692v2"]
+		suffix_file="_test" 
+	else: 
+		selected_gcf=list(dic_summary.keys()) 
+		suffix_file=""
+	to_write_plasmids=[]
+	to_write_chrm=[]	
+	for gcf in selected_gcf : 
+		for chrm in dic_summary[gcf]["chrm"]: 
+			to_write_chrm.append(chrm)
+		for plasmid in dic_summary[gcf]["plasmids"]: 
+			to_write_plasmids.append(plasmid)	
+			with open(plasmids_dir+"/"+plasmid.id+".fasta","w") as output: 
+				SeqIO.write(plasmid,output,"fasta") 	
 		
-				
+	with open(outdir+"/plasmids"+suffix_file+".fasta", "w") as output_handle:
+		SeqIO.write(to_write_plasmids, output_handle, "fasta")
+	with open(outdir+"/bacteria_chrm"+suffix_file+".fasta", "w") as output_handle: 
+		SeqIO.write(to_write_chrm, output_handle, "fasta") 			
 	 
-if len(sys.argv) != 6: 
+if len(sys.argv) != 4: 
 	usage() 
 	exit() 
 	
 genome_directory=sys.argv[1]	
-plasmid_fasta=sys.argv[2]
-chrm_fasta=sys.argv[3]
-summary_file=sys.argv[4]
-mode=sys.argv[5]
+outdir=sys.argv[2]
+mode=sys.argv[3]
 
-chrm_records,plasmid_records,summary=separate(summary_file)
-write_fastas(plasmid_fasta,chrm_fasta,mode,summary,plasmid_records,chrm_records) 
+dic_summary=separate(outdir+"/summary_plasmids.tsv",outdir+"/summary_chrm.tsv")
+write_fastas(outdir,dic_summary,mode,outdir+"/plasmid_sequences") 
 
 
  	
