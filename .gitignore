@@ -1,8 +1,11 @@
 doc/lab_notes.md
 doc/to_do.txt 
 plasmid_db*/
-tmp/
+plasmidfinder_db/
+replicon_db/
+tmp*/
 *.swp
 results/
 data/
 nohup.out
+test*/
