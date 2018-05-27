@@ -15,7 +15,7 @@ list_records=[]
 Entrez.email="cecile.hilpert@gmail.com" 
 count=0
 for l in f : 
-	accession=l.split("\t")[1]
+	accession=l.split("\t")[2]
 	handle_search=Entrez.esearch(db="nucleotide",term=accession) 
 	record_search=Entrez.read(handle_search)
 	records_fasta=[Entrez.efetch(id=i,db="nucleotide",rettype="fasta",retmode="text") for i in record_search["IdList"]]	
