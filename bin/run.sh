@@ -1,43 +1,61 @@
 set -e 
 
 function usage(){
-	echo 'usage : run.sh <outdir> <db directory>' 
+	echo 'usage : run.sh <outdir>'        
 }
 
-if [ "$#" -ne 2 ]
-then 
+if [[ $# -ne 1 ]]; then 
 	usage 
+	echo "Give out directory" 
 	exit 1 
-fi
+fi 
 
-
-
-outdir=$1 
-db_dir=$2 
-
+outdir=$1
 mkdir -p $outdir 
 
-#python3 bin/separate_plasmids_chrm.py $db_dir/complete_genomes $db_dir complete
+## PLASMID DATABASE 
 
-#bash bin/simulate_reads.sh $outdir/simulated_reads $db_dir/plasmids.fasta 20X-am0.1 $db_dir/summary_plasmids.tsv $db_dir/summary_chrm.tsv $db_dir/bacteria_chrm.fasta 
+dbdir=$outdir/database 
+mkdir -p $outdir/database 
 
-#bash bin/run_assembly.sh --megahit --metaspades --hybridspades -o $outdir/assembly -i $outdir/simulated_reads/grinder-illumina-20X-am0.1-reads.fastq -l $outdir/simulated_reads/grinder-pacbio-5x-20X-am0.1-reads.fastq 
+#bash bin/download_db.sh -o $outdir  
 
-megahit_assembly=$outdir/assembly/megahit/final.contigs.fa
-metaspades_assembly=$outdir/assembly/metaspades/scaffolds.fasta
-hybridspades_assembly=$outdir/assembly/hybridspades/scaffolds.fasta
+#Taxonomy assignment 
+#python3 bin/plasmids_taxonomy.py test/plasmid.1.genomic.gbff test/plasmids_summary.tsv
 
-#OSEF SUREMENT  
-#python3 bin/assembly_length.py $megahit_assembly $outdir/assembly/megahit/assembly_length.tsv 
-#python3 bin/assembly_length.py $metaspades_assembly $outdir/assembly/metaspades/assembly_length.tsv 
-#python3 bin/assembly_length.py $hybridspades_assembly $outdir/assembly/hybridspades/assembly_length.tsv 
+#Delete viruses 
+#grep -v "Virus" test/plasmids_summary.tsv > test/tmp.tsv 
+#mv test/tmp.tsv test/plasmids_summary.tsv 
 
-mkdir -p $outdir/assembly_evaluation
+#File for krona 
+#cut -f 3- test/plasmids_summary.tsv | sort | uniq -c > test/krona.tsv
+#python3 bin/krona_txt.py test/krona.tsv test/krona.txt 
 
-#~/quast/metaquast.py -R $db_dir/plasmid_sequences -l "megahit,metaspades,hybridspades" -o $outdir/assembly_evaluation/metaquast $megahit_assembly $metaspades_assembly $hybridspades_assembly 
+#Generate krona
+#ktImportText test/krona.txt -o test/krona.html
 
-#DO CORRECT LOOP 
-tail -n +2 $outdir/assembly_evaluation/metaquast/combined_reference/contigs_reports/all_alignments_megahit.tsv | tac > $outdir/assembly_evaluation/metaquast/combined_reference/contigs_reports/all_alignments_megahit.rev.tsv
-tail -n +2 $outdir/assembly_evaluation/metaquast/combined_reference/contigs_reports/all_alignments_metaspades.tsv | tac > $outdir/assembly_evaluation/metaquast/combined_reference/contigs_reports/all_alignments_metaspades.rev.tsv
-tail -n +2 $outdir/assembly_evaluation/metaquast/combined_reference/contigs_reports/all_alignments_hybridspades.tsv | tac > $outdir/assembly_evaluation/metaquast/combined_reference/contigs_reports/all_alignments_hybridspades.rev.tsv
+echo "Select and download non redondant species plasmids..."  
+python3 bin/select_plasmids.py $dbdir/plasmids_summary.tsv $dbdir/selected_plasmids
+
+## CONTAMINANT DATABASE
+
+# Download manually list genomes from IMG/M (https://img.jgi.doe.gov/cgi-bin/m/main.cgi?section=FindGenomes) in tsv format. 
+# Sequence status must be column 3, Domain column 2 and NCBI project ID column 10. Others columns doesn't matter. 
+
+#Keep only finished genomes, no metagenome, and only genomes with NCBI project ID
+#awk -F'\t' '{if($3=="Finished" && $2 != "Metagenome" && $10 != 0) print}' test/taxontable.tsv > test/taxontable_ncbiproject.tsv 
+
+#Keep one sequence per species, and select 500 genomes randomly  
+#python3 bin/select_contaminants.py test/taxontable_ncbiproject.tsv test/taxontable_ncbiproject_nr.tsv 
+#shuf -n 10 $dbdir/taxontable_ncbiproject_nr.tsv > $dbdir/taxontable_ncbiproject_nr500.tsv
+
+echo "Download contaminant sequences..."  
+#python3 bin/download_contaminants.py $dbdir/taxontable_ncbiproject_nr500.tsv $dbdir/contaminants.fasta 
+
+
+
+
+
+
+
 

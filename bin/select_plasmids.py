@@ -4,7 +4,7 @@ from Bio import SeqIO
 import sys  
 
 def usage(): 
-	print("usage: python3 select_plasmids.py <in_summary_tsv_file> <out_prefix>")
+	print("usage: python3 select_plasmids.py <summary_tsv_file> <out_prefix>")
 	print("Download specie non redondant sequences from a summary file. The file must be tab-separated, with id in first column, sequence description in second column and species in third column. More columns can be add if you want.") 
 	print("This script choose randomly one sequence per species.") 
 
@@ -33,7 +33,10 @@ list_records=[]
 for sp in dic : 
 	choose=random.choice(dic[sp]) 
 	out.write(choose[0]+"\t"+choose[1]+"\t"+sp+"\n")
-	handle = Entrez.efetch(db="nucleotide",id=choose[0],rettype="fasta",retmode="text")	
+	try : 
+		handle = Entrez.efetch(db="nucleotide",id=choose[0],rettype="fasta",retmode="text")	
+	except : 
+		continue 
 	rec=SeqIO.read(handle,"fasta")
 	list_records.append(rec)
 	handle.close() 
