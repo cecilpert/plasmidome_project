@@ -1,4 +1,13 @@
 import sys 
+
+def usage():
+	print('usage : python3 parse_paired_reads.py <reads file> <outdir> <prefix>')
+
+if len(sys.argv) != 4: 
+	usage() 
+	exit() 
+	
+
 f_name = sys.argv[1]
 out_dir = sys.argv[2]
 prefix = sys.argv[3]

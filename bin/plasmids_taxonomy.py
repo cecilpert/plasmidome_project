@@ -4,9 +4,10 @@ import sys
 import random 
 
 def usage(): 
-	print("usage: python3 plasmids_taxonomy.py <gb_file_1> <gb_file_2> .... <gb_file_n> <out_summary_file>")
 	print("Retrieve taxonomic levels from one or more genbank files.") 
-	print("At least 1 file must be provided")   
+	print("---" 
+	print("usage: python3 plasmids_taxonomy.py <gb_file_1> <gb_file_2> .... <gb_file_n> <out_summary_file>")
+	print("---") 
 
 if len(sys.argv)==1: 
 	usage() 
