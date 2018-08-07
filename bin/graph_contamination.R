@@ -17,7 +17,7 @@ prefix=args[3]
 
 f=read.table(args[1],header=TRUE,sep="\t")
 
-f$Assembler=factor(f$Assembler,levels=c("megahitSR10Xcont20","plasflow50","plasflow70","cbar","cbar_plasflow","decont80","decont90","decont95","decont97","decont99","decontAll")) 
+f$Assembler=factor(f$Assembler,levels=c("megahit","plasflow50","plasflow70","cbar","cbar_plasflow50","cbar_plasflow70","chrm80","chrm90","chrm95","chrm97","chrm99","chrm_all")) 
 
 g1=outputName(outdir,prefix,"_contamination.pdf")
 
